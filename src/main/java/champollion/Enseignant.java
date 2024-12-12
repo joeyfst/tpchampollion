@@ -1,5 +1,10 @@
 package champollion;
 
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+
+
 /**
  * Un enseignant est caractérisé par les informations suivantes : son nom, son adresse email, et son service prévu,
  * et son emploi du temps.
@@ -8,6 +13,10 @@ public class Enseignant extends Personne {
 
     // TODO : rajouter les autres méthodes présentes dans le diagramme UML
 
+	private final List<Intervention> interventions = new LinkedList<>();
+	
+	private final List<ServicePrevu> services = new LinkedList<>();
+	
     public Enseignant(String nom, String email) {
         super(nom, email);
     }
@@ -21,8 +30,11 @@ public class Enseignant extends Personne {
      *
      */
     public int heuresPrevues() {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+    	int heures = 0;
+        for(ServicePrevu service : services) {
+        	heures += service.getVolumeHeures();
+        }
+        return heures;
     }
 
     /**
@@ -35,8 +47,13 @@ public class Enseignant extends Personne {
      *
      */
     public int heuresPrevuesPourUE(UE ue) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+    	int heures = 0;
+        for(ServicePrevu service : services) {
+        	if(service.getUE().getIntitule().equals(ue.getIntitule())) {
+            	heures += service.getVolumeHeures();
+        	}
+        }
+        return heures;
     }
 
     /**
@@ -48,8 +65,46 @@ public class Enseignant extends Personne {
      * @param volumeTP le volume d'heures de TP
      */
     public void ajouteEnseignement(UE ue, int volumeCM, int volumeTD, int volumeTP) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        ServicePrevu ServicePrevu = new ServicePrevu(this, ue, volumeCM, volumeTD, volumeTP);
+        services.add(ServicePrevu);    
+    }
+    
+    public void ajouteIntervention(Date debut, int duree, int heureDebut, UE ue, TypeIntervention typeIntervention, Salle salle) {
+    	Intervention intervention = new Intervention(debut, duree, heureDebut, ue, this, typeIntervention, salle);
+    	interventions.add(intervention);
+    }
+    
+    public void heuresIntervention() {
+    	int heures = 0;
+    	
+    }
+    
+    public void resteAPlanifier(UE ue, TypeIntervention typeIntervention) {
+    	int volumeService = heuresPrevuesPourUE(ue);
+    	int volumeIntervention = 0;
+    	for(Intervention i : interventions) {
+    		if(i.getUE() == ue && i.getTypeIntervention() == typeIntervention) {
+    			volumeIntervention += i.getDuree();
+    		}
+    	}
+    	if(volumeService - volumeIntervention > 0) {
+    		System.out.println("Il reste "+(volumeService - volumeIntervention)+" heures à effectuer pour l'UE "+ue+" en "+typeIntervention);
+    	}
+    }
+    
+    public boolean estEnSousService() {
+    	int total = 0;
+    	for(ServicePrevu s : services) {
+    		total += s.getVolumeHeures();
+    	}
+    	if(total < 192) {
+    		System.out.println("L'enseignant est en sous-service");
+    		return true;
+    	}else {
+    		System.out.println("L'enseignant n'est pas en sous-service");
+    		return false;
+    	}
+    	
     }
 
 }
